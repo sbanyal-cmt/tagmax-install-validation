@@ -113,7 +113,7 @@ export const WelcomePhase: React.FC<WelcomePhaseProps> = ({ onNext, onUpdateBoxI
               className="font-mono text-center text-lg"
             />
             <p className="text-xs text-muted-foreground mt-1 text-center">
-              Enter the Box ID from your Tag Max package
+              Box ID from your Tag Max package
             </p>
           </div>
         </div>
