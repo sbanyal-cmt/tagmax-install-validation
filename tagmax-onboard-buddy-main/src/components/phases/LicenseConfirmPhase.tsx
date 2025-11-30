@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PhaseContainer } from '../PhaseContainer';
 import { VehicleData } from '@/hooks/useOnboardingFlow';
 import { trackVehicleConfirmStart, trackVehicleConfirmComplete } from '@/services/analytics';
-import { Check, Edit, Loader2 } from 'lucide-react';
+import { Check, Edit, Loader2, Database, Car } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { saveToGoogleSheets } from '@/services/integrations';
 
@@ -119,6 +119,10 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [licensePlateOptions] = useState(() => generateLicensePlateOptions());
+  
+  // New state for popup overlay
+  const [showRetrievingPopup, setShowRetrievingPopup] = useState(false);
+  const [originalLicensePlate, setOriginalLicensePlate] = useState(licensePlate);
 
   const { toast } = useToast();
 
@@ -127,8 +131,42 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
     trackVehicleConfirmStart();
   }, []);
 
+  // Handle license plate change - show popup if different
+  const handleLicensePlateChange = (newPlate: string) => {
+    setLicensePlate(newPlate);
+    
+    // If the new plate is different from original, show popup
+    if (newPlate !== originalLicensePlate) {
+      setShowRetrievingPopup(true);
+      
+      // After 4 seconds, update fields and hide popup
+      setTimeout(() => {
+        // Randomly update State, VIN, Make, Model
+        const newState = STATE_CODES[Math.floor(Math.random() * STATE_CODES.length)];
+        const newVIN = generateRandomVIN();
+        const newMake = generateRandomMake();
+        const newModel = generateRandomModel(newMake);
+        
+        setState(newState);
+        setVin(newVIN);
+        setMake(newMake);
+        setModel(newModel);
+        
+        // Update original license plate to new one
+        setOriginalLicensePlate(newPlate);
+        
+        // Hide popup
+        setShowRetrievingPopup(false);
+      }, 4000);
+    }
+  };
+
   const handleEdit = (field: string) => {
     setEditingField(field);
+    // Store original license plate when starting to edit
+    if (field === 'licensePlate') {
+      setOriginalLicensePlate(licensePlate);
+    }
   };
 
   const handleSave = (field: string) => {
@@ -150,6 +188,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
     setVin(vehicleData.vin || generateRandomVIN());
     setMake(vehicleData.make || generateRandomMake());
     setModel(vehicleData.model || generateRandomModel(vehicleData.make || make));
+    setShowRetrievingPopup(false);
   };
 
   const handleConfirm = async () => {
@@ -221,7 +260,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
       totalPhases={4}
       title="Confirm Vehicle Details"
     >
-      <div className="space-y-6">
+      <div className={`space-y-6 ${showRetrievingPopup ? 'blur-sm pointer-events-none' : ''}`}>
         {/* Policy Number Display */}
         {policyId && (
           <div className="text-center">
@@ -239,7 +278,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                   <div className="flex items-center gap-1">
                     <Select
                       value={licensePlate}
-                      onValueChange={(value) => setLicensePlate(value)}
+                      onValueChange={handleLicensePlateChange}
                     >
                       <SelectTrigger className="h-8 w-32 text-xs font-mono">
                         <SelectValue placeholder="Select plate" />
@@ -257,6 +296,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                       size="sm"
                       onClick={() => handleSave('licensePlate')}
                       className="h-6 w-6 p-0"
+                      disabled={showRetrievingPopup}
                     >
                       <Check className="w-3 h-3" />
                     </Button>
@@ -265,6 +305,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                       size="sm"
                       onClick={handleCancel}
                       className="h-6 w-6 p-0"
+                      disabled={showRetrievingPopup}
                     >
                       ×
                     </Button>
@@ -279,7 +320,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                       size="sm"
                       onClick={() => handleEdit('licensePlate')}
                       className="h-6 w-6 p-0"
-                      disabled={isUploading}
+                      disabled={isUploading || showRetrievingPopup}
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -324,7 +365,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                       size="sm"
                       onClick={() => handleEdit('state')}
                       className="h-6 w-6 p-0"
-                      disabled={isUploading}
+                      disabled={isUploading || showRetrievingPopup}
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -371,7 +412,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                       size="sm"
                       onClick={() => handleEdit('vin')}
                       className="h-6 w-6 p-0"
-                      disabled={isUploading}
+                      disabled={isUploading || showRetrievingPopup}
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -418,7 +459,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                       size="sm"
                       onClick={() => handleEdit('make')}
                       className="h-6 w-6 p-0"
-                      disabled={isUploading}
+                      disabled={isUploading || showRetrievingPopup}
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -465,7 +506,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                       size="sm"
                       onClick={() => handleEdit('model')}
                       className="h-6 w-6 p-0"
-                      disabled={isUploading}
+                      disabled={isUploading || showRetrievingPopup}
                     >
                       <Edit className="w-3 h-3" />
                     </Button>
@@ -484,7 +525,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             maxLength={50}
-            disabled={isUploading}
+            disabled={isUploading || showRetrievingPopup}
           />
           <p className="text-xs text-muted-foreground mt-1">
             Give your vehicle a friendly name for easy identification
@@ -496,7 +537,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
             variant="outline"
             onClick={onBack}
             className="flex-1"
-            disabled={isUploading}
+            disabled={isUploading || showRetrievingPopup}
           >
             Back
           </Button>
@@ -504,7 +545,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
             onClick={handleConfirm}
             className="flex-1 flex items-center gap-2"
             variant="success"
-            disabled={isUploading}
+            disabled={isUploading || showRetrievingPopup}
           >
             {isUploading ? (
               <>
@@ -520,6 +561,74 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Retrieving Vehicle Information Popup Overlay */}
+      {showRetrievingPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-background rounded-lg shadow-2xl p-8 max-w-md w-full mx-4 border border-border animate-in fade-in-0 zoom-in-95 duration-300">
+            <div className="flex flex-col items-center justify-center space-y-6 py-4">
+              {/* Loading Animation */}
+              <div className="relative">
+                <div className="w-24 h-24 border-4 border-primary/20 rounded-full flex items-center justify-center">
+                  <Loader2 className="w-12 h-12 text-primary animate-spin" />
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                  <Database className="w-4 h-4 text-primary-foreground" />
+                </div>
+              </div>
+
+              {/* Title */}
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-semibold text-foreground">Retrieving Vehicle Information</h3>
+                <p className="text-sm text-muted-foreground">Please wait while we validate your vehicle details</p>
+              </div>
+
+              {/* Loading Steps */}
+              <div className="space-y-3 w-full">
+                <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="w-2 h-2 bg-success rounded-full"></div>
+                  <span className="text-sm">License plate validated</span>
+                </div>
+                
+                <div className="flex items-center space-x-3 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                  <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                  <span className="text-sm font-medium">Retrieving VIN from LicensePlateData.com</span>
+                </div>
+                
+                <div className="flex items-center space-x-3 p-3 bg-muted/30 rounded-lg">
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
+                  <span className="text-sm text-muted-foreground">Validating vehicle information</span>
+                </div>
+              </div>
+
+              {/* Information Card */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full">
+                <div className="flex items-start space-x-3">
+                  <Car className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-blue-800 mb-1">What we're doing:</p>
+                    <p className="text-xs text-blue-700">
+                      We're using your license plate information to retrieve the Vehicle Identification Number (VIN) 
+                      and validate your vehicle details. This helps ensure your Tag Max device is properly configured.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Indicator */}
+              <div className="w-full">
+                <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                  <span>Retrieving VIN...</span>
+                  <span>~4 seconds</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-2">
+                  <div className="bg-primary h-2 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </PhaseContainer>
   );
 };
