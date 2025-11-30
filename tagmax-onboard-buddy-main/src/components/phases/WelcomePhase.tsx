@@ -98,9 +98,6 @@ export const WelcomePhase: React.FC<WelcomePhaseProps> = ({ onNext, onUpdateBoxI
               readOnly
               className="font-mono text-center text-lg bg-muted"
             />
-            <p className="text-xs text-muted-foreground mt-1 text-center">
-              Auto-generated Policy ID
-            </p>
           </div>
         </div>
 
