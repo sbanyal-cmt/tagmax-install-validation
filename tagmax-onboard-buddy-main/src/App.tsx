@@ -13,8 +13,8 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      {/* 👇 basename tells Router that your site is served under /tagmax-onboard-buddy/ */}
-      <BrowserRouter basename="/tagmax-onboard-buddy">
+      {/* 👇 basename tells Router that your site is served under /tagmax-install-validation/ */}
+      <BrowserRouter basename="/tagmax-install-validation">
         <Routes>
           <Route path="/" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
