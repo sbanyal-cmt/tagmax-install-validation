@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: mode === "production" ? "/tagmax-onboard-buddy/" : "/", // 👈 add this
+  base: mode === "production" ? "/tagmax-install-validation/" : "/",
   server: {
     host: "::",
     port: 8080,
