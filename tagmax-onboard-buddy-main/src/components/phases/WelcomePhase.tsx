@@ -6,21 +6,31 @@ import { PhaseContainer } from '../PhaseContainer';
 import { trackWelcomeStart, trackWelcomeComplete } from '@/services/analytics';
 import progressiveLogo from '@/assets/progressive-logo.png';
 import cmtLogo from '@/assets/cmt-logo.png';
-import tagMaxPhoto from '@/assets/tag-max-photo.jpg';
 
 interface WelcomePhaseProps {
   onNext: () => void;
   onUpdateBoxId: (boxId: string) => void;
+  onUpdatePolicyId?: (policyId: string) => void;
 }
 
-export const WelcomePhase: React.FC<WelcomePhaseProps> = ({ onNext, onUpdateBoxId }) => {
+export const WelcomePhase: React.FC<WelcomePhaseProps> = ({ onNext, onUpdateBoxId, onUpdatePolicyId }) => {
   // Generate random 4-digit number for Box ID with new format
   const generateBoxId = () => {
     const randomNumber = Math.floor(Math.random() * 9000) + 1000; // 1000-9999
     return `Tag_Max-${randomNumber}`;
   };
 
+  // Generate Policy ID: "Policy"_random number_Box ID
+  const generatePolicyId = (boxId: string) => {
+    const randomNumber = Math.floor(Math.random() * 900000) + 100000; // 100000-999999
+    return `Policy_${randomNumber}_${boxId}`;
+  };
+
   const [boxId, setBoxId] = useState(generateBoxId());
+  const [policyId] = useState(() => {
+    const initialBoxId = generateBoxId();
+    return generatePolicyId(initialBoxId);
+  });
 
   // Track welcome phase start
   useEffect(() => {
@@ -28,12 +38,18 @@ export const WelcomePhase: React.FC<WelcomePhaseProps> = ({ onNext, onUpdateBoxI
   }, []);
 
   const handleBoxIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBoxId(e.target.value);
+    const newBoxId = e.target.value;
+    setBoxId(newBoxId);
   };
 
   const handleNext = () => {
     // Update the box ID in the data
     onUpdateBoxId(boxId);
+    // Update policy ID if handler exists
+    if (onUpdatePolicyId) {
+      const currentPolicyId = generatePolicyId(boxId);
+      onUpdatePolicyId(currentPolicyId);
+    }
     // Track welcome phase completion
     trackWelcomeComplete(boxId);
     onNext();
@@ -55,12 +71,36 @@ export const WelcomePhase: React.FC<WelcomePhaseProps> = ({ onNext, onUpdateBoxI
         </div>
         
         <div className="text-center space-y-6">
-          <div className="flex justify-center">
-            <img 
-              src={tagMaxPhoto} 
-              alt="Tag Max device" 
-              className="w-64 h-48 object-cover border border-border"
+          {/* Vimeo Video */}
+          <div className="bg-muted/20 p-6 border">
+            <h4 className="font-medium text-foreground mb-4">Watch Setup Video</h4>
+            <div style={{padding:"56.25% 0 0 0", position:"relative"}}>
+              <iframe 
+                src="https://player.vimeo.com/video/1117145251?badge=0&autopause=0&player_id=0&app_id=58479" 
+                frameBorder="0" 
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" 
+                referrerPolicy="strict-origin-when-cross-origin" 
+                style={{position:"absolute", top:0, left:0, width:"100%", height:"100%"}} 
+                title="SoloTag Walkthrough Video"
+              />
+            </div>
+            <script src="https://player.vimeo.com/api/player.js"></script>
+          </div>
+        </div>
+
+        {/* Policy ID Field */}
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="policyId">Policy ID</Label>
+            <Input
+              id="policyId"
+              value={generatePolicyId(boxId)}
+              readOnly
+              className="font-mono text-center text-lg bg-muted"
             />
+            <p className="text-xs text-muted-foreground mt-1 text-center">
+              Auto-generated Policy ID
+            </p>
           </div>
         </div>
 
