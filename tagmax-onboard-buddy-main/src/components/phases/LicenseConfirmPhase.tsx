@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PhaseContainer } from '../PhaseContainer';
 import { VehicleData } from '@/hooks/useOnboardingFlow';
 import { trackVehicleConfirmStart, trackVehicleConfirmComplete } from '@/services/analytics';
@@ -16,7 +17,11 @@ interface LicenseConfirmPhaseProps {
   onNext: () => void;
   onBack: () => void;
   boxId?: string;
+  policyId?: string;
 }
+
+// US State codes
+const STATE_CODES = ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
 
 // Generate a random VIN (17 characters, following VIN format)
 const generateRandomVIN = (): string => {
@@ -75,21 +80,45 @@ const generateRandomModel = (make: string): string => {
   return models[Math.floor(Math.random() * models.length)];
 };
 
+// Generate random license plate
+const generateRandomLicensePlate = (): string => {
+  const chars = 'ABCDEFGHJKLMNPRSTUVWXYZ0123456789';
+  const length = Math.floor(Math.random() * 3) + 6; // 6-8 characters
+  let plate = '';
+  for (let i = 0; i < length; i++) {
+    plate += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return plate;
+};
+
+// Generate 3-10 random license plate options
+const generateLicensePlateOptions = (): string[] => {
+  const count = Math.floor(Math.random() * 8) + 3; // 3-10 options
+  const options = new Set<string>();
+  while (options.size < count) {
+    options.add(generateRandomLicensePlate());
+  }
+  return Array.from(options);
+};
+
 export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
   vehicleData,
   onUpdate,
   onNext,
   onBack,
-  boxId
+  boxId,
+  policyId
 }) => {
-  const [nickname, setNickname] = useState(vehicleData.nickname || '');
-  const [state, setState] = useState(vehicleData.state || '');
-  const [licensePlate, setLicensePlate] = useState(vehicleData.licensePlate || '');
+  // Auto-populate all fields with random values
+  const [state, setState] = useState(vehicleData.state || STATE_CODES[Math.floor(Math.random() * STATE_CODES.length)]);
+  const [licensePlate, setLicensePlate] = useState(vehicleData.licensePlate || generateRandomLicensePlate());
   const [vin, setVin] = useState(vehicleData.vin || generateRandomVIN());
   const [make, setMake] = useState(vehicleData.make || generateRandomMake());
   const [model, setModel] = useState(vehicleData.model || generateRandomModel(vehicleData.make || make));
+  const [nickname, setNickname] = useState(vehicleData.nickname || '');
   const [isUploading, setIsUploading] = useState(false);
   const [editingField, setEditingField] = useState<string | null>(null);
+  const [licensePlateOptions] = useState(() => generateLicensePlateOptions());
 
   const { toast } = useToast();
 
@@ -116,8 +145,8 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
   const handleCancel = () => {
     setEditingField(null);
     // Reset to original values
-    setState(vehicleData.state || '');
-    setLicensePlate(vehicleData.licensePlate || '');
+    setState(vehicleData.state || STATE_CODES[Math.floor(Math.random() * STATE_CODES.length)]);
+    setLicensePlate(vehicleData.licensePlate || generateRandomLicensePlate());
     setVin(vehicleData.vin || generateRandomVIN());
     setMake(vehicleData.make || generateRandomMake());
     setModel(vehicleData.model || generateRandomModel(vehicleData.make || make));
@@ -147,12 +176,12 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
         model: model
       });
       
-      // Prepare the data to send to Google Sheets - FIXED VERSION
+      // Prepare the data to send to Google Sheets
       const dataToSend = {
         boxId: boxId || '',
         state: state || '',
         licensePlate: licensePlate || '',
-        nickname: nickname.trim() || '', // Changed from undefined to empty string
+        nickname: nickname.trim() || '',
         vin: vin || '',
         make: make || '',
         model: model || '',
@@ -162,12 +191,6 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
 
       console.log('=== DIRECT GOOGLE SHEETS SAVE ===');
       console.log('Data being sent:', dataToSend);
-      console.log('State:', state);
-      console.log('Nickname:', nickname);
-      console.log('VIN:', vin);
-      console.log('Make:', make);
-      console.log('Model:', model);
-      console.log('Box ID:', boxId);
 
       // Save directly to Google Sheets
       const result = await saveToGoogleSheets(dataToSend);
@@ -194,13 +217,77 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
 
   return (
     <PhaseContainer
-      currentPhase={0}
+      currentPhase={1}
       totalPhases={4}
       title="Confirm Vehicle Details"
     >
       <div className="space-y-6">
+        {/* Policy Number Display */}
+        {policyId && (
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-muted-foreground">Policy: {policyId}</h3>
+          </div>
+        )}
+
         <Card className="p-4 bg-accent/20 border-accent">
           <div className="space-y-3">
+            {/* License Plate - First Field, Bold */}
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-bold">License Plate:</span>
+              <div className="flex items-center gap-2">
+                {editingField === 'licensePlate' ? (
+                  <div className="flex items-center gap-1">
+                    <Select
+                      value={licensePlate}
+                      onValueChange={(value) => setLicensePlate(value)}
+                    >
+                      <SelectTrigger className="h-8 w-32 text-xs font-mono">
+                        <SelectValue placeholder="Select plate" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {licensePlateOptions.map((option) => (
+                          <SelectItem key={option} value={option} className="font-mono">
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleSave('licensePlate')}
+                      className="h-6 w-6 p-0"
+                    >
+                      <Check className="w-3 h-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCancel}
+                      className="h-6 w-6 p-0"
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="font-mono text-lg font-bold">
+                      {licensePlate}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit('licensePlate')}
+                      className="h-6 w-6 p-0"
+                      disabled={isUploading}
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+            
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">State:</span>
               <div className="flex items-center gap-2">
@@ -236,53 +323,6 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleEdit('state')}
-                      className="h-6 w-6 p-0"
-                      disabled={isUploading}
-                    >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-sm font-medium">License Plate:</span>
-              <div className="flex items-center gap-2">
-                {editingField === 'licensePlate' ? (
-                  <div className="flex items-center gap-1">
-                    <Input
-                      value={licensePlate}
-                      onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
-                      className="h-6 text-xs font-mono w-24"
-                      maxLength={10}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSave('licensePlate')}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Check className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCancel}
-                      className="h-6 w-6 p-0"
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <span className="font-mono text-lg font-bold">
-                      {licensePlate}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit('licensePlate')}
                       className="h-6 w-6 p-0"
                       disabled={isUploading}
                     >
