@@ -266,7 +266,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
         {(policyId || boxId) && (
           <div className="text-center">
             <h3 className="text-sm font-semibold text-muted-foreground">
-              {policyId && <span>Policy: {policyId}</span>}
+              {policyId && <span>{policyId}</span>}
               {policyId && boxId && <span className="mx-2">|</span>}
               {boxId && <span>Box ID: {boxId}</span>}
             </h3>
@@ -286,7 +286,7 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
               <AlertDialogHeader>
                 <AlertDialogTitle>Information Mismatch?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  If there is an information mismatch, please contact the PGR team:
+                  If there is an information mismatch, please contact Customer Support:
                   <div className="mt-4 space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">Phone:</span>
@@ -300,7 +300,11 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Close</AlertDialogCancel>
+                <AlertDialogCancel asChild>
+                  <Button variant="default" className="bg-blue-600 hover:bg-blue-700 text-white">
+                    Close
+                  </Button>
+                </AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
