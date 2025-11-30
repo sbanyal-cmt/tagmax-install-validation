@@ -1,12 +1,7 @@
 import React from 'react';
 import { useOnboardingFlow } from '@/hooks/useOnboardingFlow';
 import { WelcomePhase } from './phases/WelcomePhase';
-import { LicenseEntryPhase } from './phases/LicenseEntryPhase';
-import { VinLoadingPhase } from './phases/VinLoadingPhase';
 import { LicenseConfirmPhase } from './phases/LicenseConfirmPhase';
-import { ActivatePhase } from './phases/ActivatePhase';
-import { LocatePhase } from './phases/LocatePhase';
-import { ApplyPhase } from './phases/ApplyPhase';
 import { PhotoUploadPhase } from './phases/PhotoUploadPhase';
 import { CSATPhase } from './phases/CSATPhase';
 import { CompletePhase } from './phases/CompletePhase';
@@ -17,6 +12,7 @@ export const TagMaxOnboarding: React.FC = () => {
     currentPhase,
     data,
     updateBoxId,
+    updatePolicyId,
     updateVehicleData,
     updateInstallationPhoto,
     updateCSATData,
@@ -84,40 +80,19 @@ export const TagMaxOnboarding: React.FC = () => {
 
   switch (currentPhase) {
     case 'welcome':
-      return <WelcomePhase onNext={nextPhase} onUpdateBoxId={updateBoxId} />;
-      
-    case 'license-entry':
-      return (
-        <LicenseEntryPhase
-          vehicleData={data.vehicle || {}}
-          onUpdate={updateVehicleData}
-          onNext={nextPhase}
-          onBack={prevPhase}
-        />
-      );
-      
-    case 'vin-loading':
-      return <VinLoadingPhase onComplete={nextPhase} />;
+      return <WelcomePhase onNext={nextPhase} onUpdateBoxId={updateBoxId} onUpdatePolicyId={updatePolicyId} />;
       
     case 'license-confirm':
       return (
         <LicenseConfirmPhase
-          vehicleData={data.vehicle!}
+          vehicleData={data.vehicle || {}}
           onUpdate={updateVehicleData}
           onNext={nextPhase}
           onBack={prevPhase}
           boxId={data.boxId}
+          policyId={data.policyId}
         />
       );
-      
-    case 'activate':
-      return <ActivatePhase onNext={nextPhase} onBack={prevPhase} />;
-      
-    case 'locate':
-      return <LocatePhase onNext={nextPhase} onBack={prevPhase} />;
-      
-    case 'apply':
-      return <ApplyPhase onNext={nextPhase} onBack={prevPhase} />;
       
     case 'photo-upload':
       return (
@@ -140,6 +115,6 @@ export const TagMaxOnboarding: React.FC = () => {
       return <CompletePhase licensePlate={data.vehicle?.licensePlate} />;
       
     default:
-      return <WelcomePhase onNext={nextPhase} onUpdateBoxId={updateBoxId} />;
+      return <WelcomePhase onNext={nextPhase} onUpdateBoxId={updateBoxId} onUpdatePolicyId={updatePolicyId} />;
   }
 };
