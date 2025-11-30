@@ -16,12 +16,13 @@ export interface CSATData {
 
 export interface OnboardingData {
   boxId?: string;
+  policyId?: string;
   vehicle: VehicleData;
   installationPhoto?: File;
   csat: CSATData;
 }
 
-type Phase = 'welcome' | 'license-entry' | 'vin-loading' | 'license-confirm' | 'activate' | 'locate' | 'apply' | 'photo-upload' | 'csat' | 'complete';
+type Phase = 'welcome' | 'license-confirm' | 'photo-upload' | 'csat' | 'complete';
 
 export const useOnboardingFlow = () => {
   const [currentPhase, setCurrentPhase] = useState<Phase>('welcome');
@@ -31,6 +32,13 @@ export const useOnboardingFlow = () => {
     setData(prev => ({
       ...prev,
       boxId: boxId
+    }));
+  }, []);
+
+  const updatePolicyId = useCallback((policyId: string) => {
+    setData(prev => ({
+      ...prev,
+      policyId: policyId
     }));
   }, []);
 
@@ -57,9 +65,11 @@ export const useOnboardingFlow = () => {
 
   const nextPhase = useCallback(() => {
     const phases: Phase[] = [
-      'welcome', 'license-entry', 'vin-loading', 'license-confirm', 
-      'activate', 'locate', 'apply', 
-      'photo-upload', 'csat', 'complete'
+      'welcome', 
+      'license-confirm', 
+      'photo-upload', 
+      'csat', 
+      'complete'
     ];
     
     const currentIndex = phases.indexOf(currentPhase);
@@ -70,9 +80,11 @@ export const useOnboardingFlow = () => {
 
   const prevPhase = useCallback(() => {
     const phases: Phase[] = [
-      'welcome', 'license-entry', 'vin-loading', 'license-confirm', 
-      'activate', 'locate', 'apply', 
-      'photo-upload', 'csat', 'complete'
+      'welcome', 
+      'license-confirm', 
+      'photo-upload', 
+      'csat', 
+      'complete'
     ];
     
     const currentIndex = phases.indexOf(currentPhase);
@@ -87,10 +99,11 @@ export const useOnboardingFlow = () => {
 
   const getPhaseNumber = () => {
     const phaseMapping: Record<Phase, number> = {
-      'welcome': 0, 'license-entry': 0, 'vin-loading': 0, 'license-confirm': 0,
-      'activate': 1, 'locate': 1, 'apply': 1,
+      'welcome': 0,
+      'license-confirm': 1,
       'photo-upload': 2,
-      'csat': 3, 'complete': 3
+      'csat': 3,
+      'complete': 3
     };
     return phaseMapping[currentPhase];
   };
@@ -114,6 +127,7 @@ export const useOnboardingFlow = () => {
     currentPhase,
     data,
     updateBoxId,
+    updatePolicyId,
     updateVehicleData,
     updateInstallationPhoto,
     updateCSATData,
