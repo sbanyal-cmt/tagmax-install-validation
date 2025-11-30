@@ -227,7 +227,7 @@ export const PhotoUploadPhase: React.FC<PhotoUploadPhaseProps> = ({
                 variant="outline"
               >
                 <Upload className="w-4 h-4" />
-                Take a Photo
+                Upload a Photo
               </Button>
             </div>
           </>
