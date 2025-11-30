@@ -4,10 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { PhaseContainer } from '../PhaseContainer';
 import { VehicleData } from '@/hooks/useOnboardingFlow';
 import { trackVehicleConfirmStart, trackVehicleConfirmComplete } from '@/services/analytics';
-import { Check, Edit, Loader2, Database, Car } from 'lucide-react';
+import { Check, Edit, Loader2, Database, Car, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { saveToGoogleSheets } from '@/services/integrations';
 
@@ -261,12 +262,49 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
       title="Confirm Vehicle Details"
     >
       <div className={`space-y-6 ${showRetrievingPopup ? 'blur-sm pointer-events-none' : ''}`}>
-        {/* Policy Number Display */}
-        {policyId && (
+        {/* Policy Number and Box ID Display */}
+        {(policyId || boxId) && (
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-muted-foreground">Policy: {policyId}</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">
+              {policyId && <span>Policy: {policyId}</span>}
+              {policyId && boxId && <span className="mx-2">|</span>}
+              {boxId && <span>Box ID: {boxId}</span>}
+            </h3>
           </div>
         )}
+
+        {/* Help Button */}
+        <div className="flex justify-end">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2" disabled={showRetrievingPopup}>
+                <HelpCircle className="w-4 h-4" />
+                Help
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Information Mismatch?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  If there is an information mismatch, please contact the PGR team:
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Phone:</span>
+                      <span>1-800-TAG-MAX</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">Email:</span>
+                      <span>solotagsupport@cmtelematics.com</span>
+                    </div>
+                  </div>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Close</AlertDialogCancel>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
 
         <Card className="p-4 bg-accent/20 border-accent">
           <div className="space-y-3">
@@ -329,190 +367,28 @@ export const LicenseConfirmPhase: React.FC<LicenseConfirmPhaseProps> = ({
               </div>
             </div>
             
+            {/* State - No Edit Option */}
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">State:</span>
-              <div className="flex items-center gap-2">
-                {editingField === 'state' ? (
-                  <div className="flex items-center gap-1">
-                    <Input
-                      value={state}
-                      onChange={(e) => setState(e.target.value.toUpperCase())}
-                      className="h-6 text-xs font-mono w-16"
-                      maxLength={2}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSave('state')}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Check className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCancel}
-                      className="h-6 w-6 p-0"
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <span className="font-mono">{state}</span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit('state')}
-                      className="h-6 w-6 p-0"
-                      disabled={isUploading || showRetrievingPopup}
-                    >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                  </>
-                )}
-              </div>
+              <span className="font-mono">{state}</span>
             </div>
             
+            {/* VIN - No Edit Option */}
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">VIN:</span>
-              <div className="flex items-center gap-2">
-                {editingField === 'vin' ? (
-                  <div className="flex items-center gap-1">
-                    <Input
-                      value={vin}
-                      onChange={(e) => setVin(e.target.value.toUpperCase())}
-                      className="h-6 text-xs font-mono w-32"
-                      maxLength={17}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSave('vin')}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Check className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCancel}
-                      className="h-6 w-6 p-0"
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <span className="font-mono text-sm">
-                      {vin}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit('vin')}
-                      className="h-6 w-6 p-0"
-                      disabled={isUploading || showRetrievingPopup}
-                    >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                  </>
-                )}
-              </div>
+              <span className="font-mono text-sm">{vin}</span>
             </div>
 
+            {/* Make - No Edit Option */}
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Make:</span>
-              <div className="flex items-center gap-2">
-                {editingField === 'make' ? (
-                  <div className="flex items-center gap-1">
-                    <Input
-                      value={make}
-                      onChange={(e) => setMake(e.target.value)}
-                      className="h-6 text-xs w-24"
-                      maxLength={20}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSave('make')}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Check className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCancel}
-                      className="h-6 w-6 p-0"
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <span className="font-mono text-sm">
-                      {make}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit('make')}
-                      className="h-6 w-6 p-0"
-                      disabled={isUploading || showRetrievingPopup}
-                    >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                  </>
-                )}
-              </div>
+              <span className="font-mono text-sm">{make}</span>
             </div>
 
+            {/* Model - No Edit Option */}
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Model:</span>
-              <div className="flex items-center gap-2">
-                {editingField === 'model' ? (
-                  <div className="flex items-center gap-1">
-                    <Input
-                      value={model}
-                      onChange={(e) => setModel(e.target.value)}
-                      className="h-6 text-xs w-24"
-                      maxLength={20}
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleSave('model')}
-                      className="h-6 w-6 p-0"
-                    >
-                      <Check className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCancel}
-                      className="h-6 w-6 p-0"
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <span className="font-mono text-sm">
-                      {model}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEdit('model')}
-                      className="h-6 w-6 p-0"
-                      disabled={isUploading || showRetrievingPopup}
-                    >
-                      <Edit className="w-3 h-3" />
-                    </Button>
-                  </>
-                )}
-              </div>
+              <span className="font-mono text-sm">{model}</span>
             </div>
           </div>
         </Card>
