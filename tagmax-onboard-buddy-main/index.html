@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tag Max Onboarding</title>
+    <meta name="description" content="Set up your Tag Max device in just a few simple steps. Mobile-optimized onboarding flow for iOS Safari." />
+    <meta name="author" content="Tag Max" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+
+    <meta property="og:title" content="Tag Max Onboarding" />
+    <meta property="og:description" content="Set up your Tag Max device in just a few simple steps. Mobile-optimized onboarding flow." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@lovable_dev" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LTJ55JB5XS"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      
+      // Configure Google Analytics with enhanced tracking
+      gtag('config', 'G-LTJ55JB5XS', {
+        page_title: 'Tag Max Onboarding',
+        page_location: window.location.href,
+        custom_map: {
+          'custom_parameter_1': 'phase',
+          'custom_parameter_2': 'step',
+          'custom_parameter_3': 'action',
+          'custom_parameter_4': 'funnel_position'
+        },
+        // Enhanced ecommerce tracking for funnel analysis
+        send_page_view: true,
+        anonymize_ip: true
+      });
+      
+      // Track initial page view
+      gtag('event', 'page_view', {
+        page_title: 'Tag Max Onboarding - Welcome',
+        page_location: window.location.href,
+        phase: 'welcome',
+        funnel_position: 1
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
