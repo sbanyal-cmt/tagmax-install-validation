@@ -202,10 +202,8 @@ export const PhotoUploadPhase: React.FC<PhotoUploadPhaseProps> = ({
             <div className="bg-amber-50 border border-amber-200 p-4">
               <h4 className="font-medium text-amber-800 mb-2">Photo Guidelines:</h4>
               <ul className="text-sm text-amber-700 space-y-1">
-                <li>• Show the full windshield area</li>
-                <li>• Ensure TagMax is clearly visible</li>
-                <li>• No tint or obstructions in view</li>
-                <li>• Good lighting for clear image</li>
+                <li>• Ensure TagMax is clearly visible with good lighting</li>
+                <li>• Do not place Tag Max behind tint or stickers</li>
               </ul>
             </div>
 
