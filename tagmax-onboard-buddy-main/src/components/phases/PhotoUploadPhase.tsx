@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { PhaseContainer } from '../PhaseContainer';
 import { Camera, Upload, RotateCcw, Check, Square } from 'lucide-react';
+import tagMaxPhoto from '@/assets/tag-max-photo.jpg';
 
 interface PhotoUploadPhaseProps {
   onPhotoUpload: (file: File) => void;
@@ -181,7 +182,13 @@ export const PhotoUploadPhase: React.FC<PhotoUploadPhaseProps> = ({
         {!showCamera && !photo ? (
           <>
             <div className="text-center space-y-4">
-              <div className="text-4xl mb-4">📸</div>
+              <div className="flex justify-center mb-4">
+                <img 
+                  src={tagMaxPhoto} 
+                  alt="Tag Max device" 
+                  className="w-64 h-48 object-cover border border-border rounded-lg"
+                />
+              </div>
               <div className="space-y-2">
                 <p className="font-medium text-foreground">
                   Take a photo of TagMax on your windshield
